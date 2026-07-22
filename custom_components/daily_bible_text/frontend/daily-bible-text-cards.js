@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════
 // Daily Bible Text Cards
 // Author: KingDando8430
-// https://github.com/KingDando8430/HA-Daily-Bible-Text
+// https://github.com/1914jw/HA-Daily-Bible-Text
 // Version: 1.1.0
 // ═══════════════════════════════════════════════════════════════════
 
@@ -689,7 +689,7 @@ window.customCards.push({
   name: 'Daily Bible Text (Inline)',
   description: 'Icon + today\u2019s daily text in a single row, with a detail pop-up.',
   preview: true,
-  documentationURL: 'https://github.com/KingDando8430/HA-Daily-Bible-Text',
+  documentationURL: 'https://github.com/1914jw/HA-Daily-Bible-Text',
   getEntitySuggestion: (hass, entityId) => {
     if (!dbtIsIntegrationEntity(hass, entityId)) return null;
     const deviceId = hass?.entities?.[entityId]?.device_id;
