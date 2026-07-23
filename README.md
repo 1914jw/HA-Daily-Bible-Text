@@ -22,7 +22,7 @@ A fully offline Home Assistant custom integration that reads daily Bible verse e
 ### HACS (Recommended)
 1. Install Integration via HACS
 
-<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=KingDando8430&repository=HA-Daily-Bible-Text&category=integration" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store." /></a>
+<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=1914jw&repository=HA-Daily-Bible-Text&category=integration" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store." /></a>
 
 2. Restart Home Assistant
 
