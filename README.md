@@ -81,7 +81,7 @@ Two Lovelace cards are bundled in `custom_components/daily_bible_text/frontend/d
 
 ### Install
 
-Nothing to do — the integration serves the file itself and registers it as a dashboard resource automatically on startup (via `add_extra_js_url`, at `/daily_bible_text_frontend/daily-bible-text-cards.js`). Just:
+Nothing to do — the integration serves the file itself and registers it as a dashboard resource automatically on startup (via `add_extra_js_url`, at `/daily_bible_text_frontend/daily-bible-text-loader.js`). Just:
 
 1. Add either card via the card picker (search "Daily Bible Text"), or select an integration entity and pick it from the suggested cards.
 2. Choose the **device** for your language/year in the card's editor.
@@ -99,6 +99,7 @@ Both cards read theme colors from Home Assistant CSS variables, so palette/typog
       ...                          ← integration code
       frontend/
         daily-bible-text-cards.js  ← Lovelace cards, served automatically
+        daily-bible-text-loader.js ← loads the cards with retry
   daily_bible_text/
     bible_text.epub       ← uploaded EPUB (or place yours here manually)
     cache_<id>.json       ← auto-generated parse cache
