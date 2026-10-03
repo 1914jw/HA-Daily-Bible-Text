@@ -53,17 +53,33 @@ class _ElementParser(HTMLParser):
     def __init__(self):
         super().__init__()
         self.elements = []
-        self._stack = [("root", set())]
+        # Parallel to ``elements``: (owner_p_id, start, end) offsets of the
+        # fragment inside the raw text of its enclosing <p>.
+        self.meta = []
+        self.p_text = {}   # owner_p_id -> raw text of the whole paragraph
+        self.p_cls = {}    # owner_p_id -> class set of that paragraph
+        self._uid = 0
+        self._stack = [("root", set(), None)]
         self._buf = []
         self._skip = 0
+
+    def _owner(self):
+        """Id of the nearest enclosing <p> (or None)."""
+        for tag, _, uid in reversed(self._stack):
+            if tag == "p":
+                return uid
+        return None
 
     def _flush(self):
         raw = "".join(self._buf).replace("\xa0", " ")
         text = re.sub(r"\s+", " ", raw).strip()
         self._buf = []
         if text and self._stack:
-            tag, cls = self._stack[-1]
+            tag, cls, _ = self._stack[-1]
             self.elements.append((tag, cls, text))
+            owner = self._owner()
+            end = len(self.p_text.get(owner, ""))
+            self.meta.append((owner, end - len(raw), end))
 
     def handle_starttag(self, tag, attrs):
         t = tag.lower()
@@ -75,7 +91,13 @@ class _ElementParser(HTMLParser):
         if t in self._BLOCK:
             self._flush()
         cls = set((dict(attrs).get("class") or "").lower().split())
-        self._stack.append((t, cls))
+        uid = None
+        if t == "p":
+            self._uid += 1
+            uid = self._uid
+            self.p_text[uid] = ""
+            self.p_cls[uid] = cls
+        self._stack.append((t, cls, uid))
 
     def handle_endtag(self, tag):
         t = tag.lower()
@@ -93,19 +115,27 @@ class _ElementParser(HTMLParser):
     def handle_data(self, data):
         if not self._skip:
             self._buf.append(data)
+            owner = self._owner()
+            if owner is not None:
+                self.p_text[owner] += data.replace("\xa0", " ")
 
     def done(self):
         self._flush()
         return self.elements
 
 
-def _parse_elements(html: str):
+def _parse_elements_ex(html: str):
+    """Return (elements, meta, p_text, p_cls) – see _ElementParser."""
     p = _ElementParser()
     try:
         p.feed(html)
     except Exception:
         pass
-    return p.done()
+    return p.done(), p.meta, p.p_text, p.p_cls
+
+
+def _parse_elements(html: str):
+    return _parse_elements_ex(html)[0]
 
 
 def _html_to_text(html: str) -> str:
@@ -233,7 +263,7 @@ def _is_commentary_p(tag: str, classes: set) -> bool:
 
 def _parse_single_file_entry(html: str) -> Optional[dict]:
     """Parse one XHTML file → {"date_key", "verse", "commentary"} or None."""
-    elements = _parse_elements(html)
+    elements, meta, p_text, p_cls = _parse_elements_ex(html)
 
     # 1. Find date
     date_key = None
@@ -291,10 +321,14 @@ def _parse_single_file_entry(html: str) -> Optional[dict]:
     verse = _normalise_verse(raw_verse)
 
     # 3. Extract commentary + citation ("quelle", e.g. "w24.06 21 Abs. 8")
-    commentary_parts = []
+    # Commentary is rebuilt from the raw paragraph text so that nested inline
+    # elements (verse references in brackets: <a>/<span>/<em>) stay inside.
+    commentary_spans: dict = {}   # owner_p_id -> [start, end]
     citation_parts = []
     citation_started = False
-    for tag, classes, text in elements[verse_end_idx + 1:]:
+    for k in range(verse_end_idx + 1, len(elements)):
+        tag, classes, text = elements[k]
+        owner, f_start, f_end = meta[k]
         stripped = text.strip()
         if not stripped:
             continue
@@ -312,10 +346,16 @@ def _parse_single_file_entry(html: str) -> Optional[dict]:
                 break  # next day's content reached
             citation_parts.append(stripped)
             continue
-        if _is_commentary_p(tag, classes):
-            clean = stripped.lstrip(").").strip()
-            if len(clean) > 5:
-                commentary_parts.append(text)
+        if owner is not None and _is_commentary_p("p", p_cls.get(owner, set())):
+            span = commentary_spans.setdefault(owner, [f_start, f_end])
+            span[1] = f_end
+
+    commentary_parts = []
+    for owner, (c_start, c_end) in commentary_spans.items():
+        part = re.sub(r"\s+", " ", p_text[owner][c_start:c_end]).strip()
+        part = re.sub(r"\s*\^\s*$", "", part)
+        if len(part.lstrip(").").strip()) > 5:
+            commentary_parts.append(part)
 
     commentary = re.sub(r"\s+", " ", " ".join(commentary_parts)).strip()
     citation = re.sub(r"\s+", " ", " ".join(citation_parts)).strip()
