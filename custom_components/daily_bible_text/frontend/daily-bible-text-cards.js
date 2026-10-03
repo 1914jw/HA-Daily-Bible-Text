@@ -2,10 +2,10 @@
 // Daily Bible Text Cards
 // Author: KingDando8430
 // https://github.com/1914jw/HA-Daily-Bible-Text
-// Version: 1.1.0
+// Version: 1.1.1
 // ═══════════════════════════════════════════════════════════════════
 
-const DBT_VERSION = '1.1.0';
+const DBT_VERSION = '1.1.1';
 const DBT_DOMAIN = 'daily_bible_text';
 
 // Entity "role" is detected from the localized suffix of its entity_id
@@ -703,10 +703,10 @@ window.customCards.push({
   },
 });
 
-customElements.define('daily-bible-text-card-editor', DailyBibleTextCardEditor);
-customElements.define('daily-bible-text-card', DailyBibleTextCard);
-customElements.define('daily-bible-text-inline-card-editor', DailyBibleTextInlineCardEditor);
-customElements.define('daily-bible-text-inline-card', DailyBibleTextInlineCard);
+if (!customElements.get('daily-bible-text-card-editor')) customElements.define('daily-bible-text-card-editor', DailyBibleTextCardEditor);
+if (!customElements.get('daily-bible-text-card')) customElements.define('daily-bible-text-card', DailyBibleTextCard);
+if (!customElements.get('daily-bible-text-inline-card-editor')) customElements.define('daily-bible-text-inline-card-editor', DailyBibleTextInlineCardEditor);
+if (!customElements.get('daily-bible-text-inline-card')) customElements.define('daily-bible-text-inline-card', DailyBibleTextInlineCard);
 
 console.info(
   `%c DAILY-BIBLE-TEXT-CARDS %c v${DBT_VERSION} `,
