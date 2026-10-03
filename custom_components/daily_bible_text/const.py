@@ -22,7 +22,7 @@ LANGUAGE_DISPLAY = {
 
 # Storage
 STORAGE_DIR = "daily_bible_text"
-CACHE_VERSION = 3  # bumped for citation field (v1.1)
+CACHE_VERSION = 4  # bumped: commentary keeps nested verse refs (v1.1.1)
 
 # Sensor state-attribute names
 ATTR_DATE = "date"
